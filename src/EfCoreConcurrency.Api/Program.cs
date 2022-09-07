@@ -1,4 +1,4 @@
-using EfCoreConcurrency.Api.DataAccess.Entities;
+﻿using EfCoreConcurrency.Api.DataAccess.Entities;
 using EfCoreConcurrency.Api.DataAccess.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -85,9 +85,29 @@ app.MapPost("/products/create", async (ProductDto product, AppDbContext _db) =>
 
 app.MapPost("/products/update", async (Product product, AppDbContext _db) =>
 {
-    _db.Products.Update(product);
-    await _db.SaveChangesAsync();
-    return Results.Ok();
+    string message = string.Empty;
+    try
+    {
+        _db.Products.Update(product);
+        await _db.SaveChangesAsync();
+    }
+    catch (DbUpdateConcurrencyException ex)
+    {
+        var entiries = ex.Entries.First();
+        var currentData = entiries.Entity as Product;
+        var actualData = entiries.GetDatabaseValues();
+        if (actualData != null)
+        {
+            message = "Kayıt başka bir kullanıcı tarafından değiştirilmiş";
+        }
+        else
+        {
+            message = "Kayıt Silinmiş";
+        }
+
+       
+    }
+    return Results.Ok(message);
 });
 
 app.Run();
