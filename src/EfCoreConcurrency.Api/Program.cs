@@ -1,3 +1,4 @@
+using EfCoreConcurrency.Api.DataAccess.Entities;
 using EfCoreConcurrency.Api.DataAccess.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,6 +42,53 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+app.MapGet("/products", async (AppDbContext _db) =>
+{
+    var products = await _db.Products.ToListAsync();
+    return Results.Ok(products);
+}).WithName("GetProducts");
+
+app.MapGet("/products/{id}", async (int id, AppDbContext _db) =>
+{
+    var product = await _db.Products.FindAsync(id);
+    if (product == null)
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(product);
+}).WithName("GetProductById");
+
+app.MapDelete("/products/{id}", async (int id, AppDbContext _db) =>
+{
+    var product = await _db.Products.FindAsync(id);
+    if (product == null)
+    {
+        return Results.NotFound();
+    }
+    _db.Products.Remove(product);
+    await _db.SaveChangesAsync();
+    return Results.Ok();
+}).WithName("DeleteProductById");
+
+app.MapPost("/products/create", async (ProductDto product, AppDbContext _db) =>
+{
+    _db.Products.Add(new Product
+    {
+        Name = product.Name,
+        Code = product.Code,
+        Price = product.Price
+    });
+    await _db.SaveChangesAsync();
+    return Results.Ok();
+});
+
+app.MapPost("/products/update", async (Product product, AppDbContext _db) =>
+{
+    _db.Products.Update(product);
+    await _db.SaveChangesAsync();
+    return Results.Ok();
+});
 
 app.Run();
 
