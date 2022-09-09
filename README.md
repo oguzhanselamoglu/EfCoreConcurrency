@@ -15,6 +15,12 @@
   public byte[] RowVersion { get; set; }
  ```
 
+## PostgreSql
+PostgreSql, Sql deki gibi RowVersion'u desteklemiyor. Onun için xmin adında shadow property oluşturmak gerekiyor. Fluent Api olarak ta aşağıdaki gibi kullanılabilir
+ ```  
+builder.UseXminAsConcurrencyToken();
+ ```
+
 ## Veri Tabanı
 * Veri tabanı olarak Docker ortamında sql server kullanıldı
 * Docker Sql Container için Portainer dan faydalanabilir kurulumu aşağıdaki gibi
